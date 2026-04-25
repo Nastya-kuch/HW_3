@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
 fun RickAndMortyApp() {
     val navController = rememberNavController()
 
-    // ViewModel для списка
     val listViewModel: CharacterViewModel = viewModel()
     val listUiState = listViewModel.uiState
 

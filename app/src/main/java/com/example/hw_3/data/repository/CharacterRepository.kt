@@ -7,8 +7,6 @@ import kotlinx.coroutines.withContext
 
 class CharacterRepository {
     private val api = RetrofitClient.apiService
-
-    // Загружаем ТОЛЬКО одну страницу
     suspend fun getCharactersPage(page: Int): List<Character> = withContext(Dispatchers.IO) {
         val response = api.getCharacters(page = page)
 
