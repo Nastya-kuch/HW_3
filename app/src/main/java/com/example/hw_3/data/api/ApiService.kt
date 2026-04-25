@@ -1,7 +1,5 @@
 package com.example.hw_3.data.api
 
-import com.example.hw_3.data.models.Character
-import com.example.hw_3.data.models.CharacterResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -15,5 +13,51 @@ interface ApiService {
     @GET("character/{id}")
     suspend fun getCharacterById(
         @Path("id") id: Int
-    ): Character
+    ): CharacterResponseSingle
 }
+
+data class CharacterResponse(
+    val info: Info,
+    val results: List<CharacterFromApi>
+)
+
+data class CharacterResponseSingle(
+    val id: Int,
+    val name: String,
+    val status: String,
+    val species: String,
+    val type: String,
+    val gender: String,
+    val origin: OriginFromApi,
+    val location: LocationFromApi,
+    val episode: List<String>
+)
+
+data class Info(
+    val count: Int,
+    val pages: Int,
+    val next: String?,
+    val prev: String?
+)
+
+data class CharacterFromApi(
+    val id: Int,
+    val name: String,
+    val status: String,
+    val species: String,
+    val type: String,
+    val gender: String,
+    val origin: OriginFromApi,
+    val location: LocationFromApi,
+    val episode: List<String>
+)
+
+data class OriginFromApi(
+    val name: String,
+    val url: String
+)
+
+data class LocationFromApi(
+    val name: String,
+    val url: String
+)

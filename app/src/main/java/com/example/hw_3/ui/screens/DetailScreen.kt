@@ -4,65 +4,57 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.hw_3.ui.viewmodel.CharactersViewModel
-import com.example.hw_3.ui.viewmodel.DetailUiState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
+import com.example.hw_3.ui.viewmodel.CharacterDetailUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    characterId: Int,
-    navController: NavController,
-    viewModel: CharactersViewModel = viewModel()
+    uiState: CharacterDetailUiState,
+    onRetry: () -> Unit,
+    onBack: () -> Unit
 ) {
-    val state = viewModel.detailState
-
-    LaunchedEffect(characterId) {
-        viewModel.loadCharacterDetail(characterId)
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Character Details") },
+                title = { Text("Детали персонажа") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Назад"
+                        )
                     }
                 }
             )
         }
-    ) { paddingValues ->
+    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(innerPadding)
         ) {
-            when (state) {
-                is DetailUiState.Loading -> {
+            when {
+                uiState.isLoading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -71,44 +63,47 @@ fun DetailScreen(
                     }
                 }
 
-                is DetailUiState.Error -> {
-                    Column(
+                uiState.errorMessage != null -> {
+                    Box(
                         modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Error: ${state.message}")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.retryDetail(characterId) }) {
-                            Text("Retry")
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Ошибка: ${uiState.errorMessage}",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = onRetry) {
+                                Text("Повторить")
+                            }
                         }
                     }
                 }
 
-                is DetailUiState.Success -> {
-                    val character = state.character
+                uiState.character != null -> {
+                    val character = uiState.character
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                             .padding(16.dp)
                     ) {
-
+                        Text(
+                            text = character.name,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Text(
-                            text = character.name,
-                            style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text("Status: ${character.status}")
-                        Text("Species: ${character.species}")
-                        Text("Gender: ${character.gender}")
-                        Text("Type: ${character.type}")
-
+                        Text("Статус: ${character.status}")
+                        Text("Вид: ${character.species}")
+                        Text("Пол: ${character.gender}")
+                        Text("Тип: ${if (character.type.isBlank()) "Не указан" else character.type}")
+                        Text("Происхождение: ${character.origin}")
+                        Text("Локация: ${character.location}")
+                        Text("Количество эпизодов: ${character.episodeCount}")
                     }
                 }
             }
